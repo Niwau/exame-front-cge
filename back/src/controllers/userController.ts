@@ -9,7 +9,7 @@ export const createUserController = async (req: Request, res: Response) => {
   const userExists = await User.findOne({ email });
 
   if (userExists) {
-    return res.status(401).json(createResponse('User already exists'));
+    return res.status(401).json(createResponse('User already exists.'));
   }
 
   await new User({ email, password: await hashPassword(password) }).save();
