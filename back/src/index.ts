@@ -6,10 +6,12 @@ import { categoryRouter } from './routes/categoryRoute';
 import { productRouter } from './routes/productRoute';
 import { loginRoute } from './routes/loginRoute';
 import { validateAuth } from './middlewares/validateAuth';
+import cors from 'cors';
 
 const app = express();
 const port = process.env.PORT || 3000;
 
+app.use(cors())
 app.use(express.json());
 app.use(validateAuth)
 app.use('/users', userRouter);
