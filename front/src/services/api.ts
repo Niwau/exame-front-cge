@@ -1,4 +1,7 @@
-import axios from 'axios';
+import { CategoryInterface } from '@/types/CategoryInterface';
+import { ProductInterface } from '@/types/ProductInterface';
+import axios, { AxiosResponse } from 'axios';
+import useSWR from 'swr';
 
 export interface APIResponse<T> {
   message: T;
@@ -13,3 +16,11 @@ export const api = axios.create({
     Authorization: 'Bearer ' + token
   }
 });
+
+export const useProducts = () => {
+  return useSWR<AxiosResponse<ProductInterface[]>>('/products');
+}
+
+export const useCategories = () => {
+  return useSWR<AxiosResponse<CategoryInterface[]>>('/categories');
+}
