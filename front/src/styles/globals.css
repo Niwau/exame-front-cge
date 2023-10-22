@@ -1,3 +1,31 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  select {
+    -moz-appearance: none;
+    appearance: none;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  select::-ms-expand {
+    display: none;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply flex flex-1 items-center justify-center gap-1 py-2 rounded-full px-4 text-white font-normal
+  }
+  .btn-primary {
+    @apply bg-primary hover:bg-primary-100 btn
+  }
+  .btn-danger {
+    @apply bg-danger hover:bg-danger/80
+  }
+  .btn-transparent {
+    @apply bg-opacity-0 hover:bg-opacity-0 hover:underline
+  }
+}
