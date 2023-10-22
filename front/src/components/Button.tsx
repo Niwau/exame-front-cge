@@ -1,7 +1,25 @@
-export const Button = ({ children, className, ...rest}: React.ButtonHTMLAttributes<HTMLButtonElement>) => {
+import { Trash, FloppyDisk } from "@phosphor-icons/react";
+
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  leftIcon?: React.ReactNode;
+}
+
+export const Button = ({ children, className, leftIcon, ...rest }: ButtonProps) => {
   return (
-    <button className={`bg-primary hover:bg-primary-100 py-2 rounded-full px-4 text-white font-normal ${className}`} {...rest}>
-      { children }
+    <button
+      className={`btn-primary ${className}`}
+      {...rest}
+    >
+      {leftIcon}
+      {children}
     </button>
-  )
+  );
+};
+
+export const DeleteButton: typeof Button = ({ ...rest }) => {
+  return <Button className="btn-danger" leftIcon={<Trash weight="bold" />} {...rest} />
+}
+
+export const SaveButton: typeof Button = ({ ...rest }) => {
+  return <Button leftIcon={<FloppyDisk weight="bold" />} {...rest} />
 }
