@@ -7,20 +7,25 @@ export interface APIResponse<T> {
   message: T;
 }
 
-const token = typeof window != 'undefined' ? window.localStorage.getItem('token') : ''
+const getToken = () => (typeof window != 'undefined' ? window.localStorage.getItem('token') : '');
 
 export const api = axios.create({
   baseURL: 'http://localhost:3000',
   headers: {
-    'Content-Type': 'application/json',
-    Authorization: 'Bearer ' + token
+    'Content-Type': 'application/json'
   }
+});
+
+api.interceptors.request.use((request) => {
+  const token = getToken();
+  request.headers.Authorization = `Bearer ${token}`;
+  return request;
 });
 
 export const useProducts = () => {
   return useSWR<AxiosResponse<ProductInterface[]>>('/products');
-}
+};
 
 export const useCategories = () => {
   return useSWR<AxiosResponse<CategoryInterface[]>>('/categories');
-}
+};
