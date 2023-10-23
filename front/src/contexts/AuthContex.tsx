@@ -14,7 +14,7 @@ export const AuthContextProvider = ({ children }: Children) => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) setIsAuthenticated(true);
-  }, [])
+  }, []);
 
   return <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated }}>{children}</AuthContext.Provider>;
 };
