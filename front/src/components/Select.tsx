@@ -15,9 +15,6 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(({ errorMessage
         className={`bg-dark-400 outline-2 text-white border-0 rounded-full py-2 px-4 focus:outline focus:outline-primary ${invalid}`}
         {...rest}
       >
-        <option value="" disabled selected>
-          Selecione
-        </option>
         {children}
       </select>
       <ErrorMessage message={errorMessage} />
