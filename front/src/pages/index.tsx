@@ -1,80 +1,78 @@
-'use client';
 import { Box } from '@/components/Box';
-import { Button } from '@/components/Button';
-import { Field } from '@/components/Field';
-import { Input } from '@/components/Input';
 import { LoginType, loginSchema } from '@/schemas/userSchema';
 import { APIResponse, api } from '@/services/api';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import axios from 'axios';
+import { isAxiosError } from 'axios';
 import { toast } from 'react-toastify';
 import Link from 'next/link';
 import { useAuthContext } from '@/contexts/AuthContex';
+import { Form, FormField } from '@/components/Form';
+import { DefaultValues, UseFormReturn } from 'react-hook-form';
+import { ERRORS } from '@/constants/errors';
+import { Button } from '@/components/Button';
+import { useRouter } from 'next/router';
 
 export default function Login() {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setError
-  } = useForm<LoginType>({
-    defaultValues: {
-      email: '',
-      password: ''
-    },
-    resolver: zodResolver(loginSchema)
-  });
-
   const { setIsAuthenticated } = useAuthContext();
+  const router = useRouter()
 
-  const handleLogin = async (email: string, password: string) => {
-    const res = await api.post<APIResponse<string>>('/login', { email, password });
+  const handleLogin = async (credentials: LoginType) => {
+    const res = await api.post<APIResponse<string>>('/login', credentials);
     localStorage.setItem('token', res.data.message);
     toast.success('Login realizado com sucesso!');
+    router.replace('/products')
     setIsAuthenticated(true);
   };
 
-  const handleErrorResponse = (message?: string) => {
-    if (message == 'Invalid email or password.') {
-      setError('email', {
-        message: 'Email ou senha inválidos.'
-      });
+  const handleErrorResponse = (e: unknown, { setError }: UseFormReturn<LoginType>) => {
+    if (isAxiosError<APIResponse<string>>(e)) {
+      if (e?.response?.data.message == 'Invalid email or password.') {
+        setError('email', {
+          message: 'Email ou senha inválidos.'
+        });
+      }
+    } else {
+      toast.error(ERRORS.FAIL);
     }
   };
 
-  const onSubmit = handleSubmit(async (form) => {
+  const onSubmit = async (credentials: LoginType, methods: UseFormReturn<LoginType>) => {
     try {
-      await handleLogin(form.email, form.password);
+      await handleLogin(credentials);
     } catch (e) {
-      if (axios.isAxiosError<APIResponse<string>>(e)) {
-        handleErrorResponse(e.response?.data.message);
-      } else {
-        toast.error('Um erro ocorreu ao realizar o login, tente novamente mais tarde.');
-      }
+      handleErrorResponse(e, methods);
     }
-  });
+  };
 
   return (
     <Box className="p-8 w-[400px] absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]">
-      <form autoComplete="off" className="flex flex-col gap-4" onSubmit={onSubmit}>
-        <h1 className="text-base font-semibold text-white">Login</h1>
-        <Field>
-          <Field.Label>Email</Field.Label>
-          <Input {...register('email')} errorMessage={errors.email?.message} />
-        </Field>
-        <Field>
-          <Field.Label>Senha</Field.Label>
-          <Input type="password" {...register('password')} errorMessage={errors.password?.message} />
-        </Field>
-        <Button>Login</Button>
-        <p className="text-white">
-          Não possui conta?{' '}
-          <Link className="text-primary underline" href="/signup">
-            Cadastre-se
-          </Link>
-        </p>
-      </form>
+      <Form title="Login" fields={loginFields} schema={loginSchema} onSubmit={onSubmit} defaultValues={defaultValues}>
+        <div className="flex flex-col gap-2">
+          <Button>Entrar</Button>
+          <p className="text-white">
+            Não possui conta?{' '}
+            <Link className="text-primary" href="/signup">
+              Cadastre-se
+            </Link>
+          </p>
+        </div>
+      </Form>
     </Box>
   );
 }
+
+const defaultValues: DefaultValues<LoginType> = {
+  email: '',
+  password: ''
+};
+
+export const loginFields: FormField<LoginType>[] = [
+  {
+    label: 'Email',
+    name: 'email'
+  },
+  {
+    label: 'Senha',
+    name: 'password',
+    type: 'password'
+  }
+];
