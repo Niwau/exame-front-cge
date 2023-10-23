@@ -1,7 +1,8 @@
 import { AddCategoryModal } from '@/components/Category/AddCategoryModal';
 import { EditCategoryModal } from '@/components/Category/EditCategoryModal';
 import { Color } from '@/components/Color';
-import { Table } from '@/components/Table';
+import { Table } from '@/components/Table/Table';
+import { useErrorChecker } from '@/hooks/useErrorChecker';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { useCategories } from '@/services/api';
 import { CategoryInterface } from '@/types/CategoryInterface';
@@ -9,7 +10,8 @@ import { useMemo } from 'react';
 import { Column } from 'react-table';
 
 export default function Categories() {
-  const { data } = useCategories();
+  const { data, error } = useCategories();
+  useErrorChecker(error, 'Ocorreu um erro ao buscar os categorias');
 
   const columns = useMemo<Column<CategoryInterface>[]>(
     () => [
@@ -30,7 +32,7 @@ export default function Categories() {
         Header: 'Editar',
         id: 'edit',
         accessor: (category) => <EditCategoryModal {...category} />,
-        disableSortBy: true,
+        disableSortBy: true
       }
     ],
     []
