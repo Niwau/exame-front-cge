@@ -1,78 +1,74 @@
-'use client';
 import { Box } from '@/components/Box';
 import { Button } from '@/components/Button';
-import { Field } from '@/components/Field';
-import { Input } from '@/components/Input';
-import { RegisterType, registerSchema } from '@/schemas/userSchema';
+import { LoginType, RegisterType, registerSchema } from '@/schemas/userSchema';
 import { APIResponse, api } from '@/services/api';
-import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
-import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import axios from 'axios';
+import { isAxiosError } from 'axios';
+import { Form, FormField } from '@/components/Form';
+import { DefaultValues, UseFormReturn } from 'react-hook-form';
+import { ERRORS } from '@/constants/errors';
 
 export default function SignUp() {
-  const {
-    register,
-    formState: { errors },
-    handleSubmit,
-    setError
-  } = useForm<RegisterType>({
-    defaultValues: {
-      email: '',
-      password: '',
-      rePassword: ''
-    },
-    resolver: zodResolver(registerSchema)
-  });
-
-  const handleSignUp = async (email: string, password: string, rePassword: string) => {
-    await api.post('/users', { email, password, rePassword });
+  const handleSignUp = async (credentials: LoginType) => {
+    await api.post('/users', credentials);
     toast.success('Conta criada com sucesso!');
   };
 
-  const handleErrorResponse = (message?: string) => {
-    if (message == 'User already exists.') {
-      setError('email', { message: 'Esse email já está em uso.' });
+  const handleErrorResponse = (e: unknown, { setError }: UseFormReturn<RegisterType>) => {
+    if (isAxiosError<APIResponse<string>>(e)) {
+      if (e.response?.data.message == 'User already exists.') {
+        setError('email', { message: 'Esse email já está em uso.' });
+      }
+    } else {
+      toast.error(ERRORS.FAIL);
     }
   };
 
-  const onSubmit = handleSubmit(async (form) => {
+  const onSubmit = async (credentials: RegisterType, methods: UseFormReturn<RegisterType>) => {
     try {
-      await handleSignUp(form.email, form.password, form.rePassword);
+      await handleSignUp(credentials);
     } catch (e) {
-      if (axios.isAxiosError<APIResponse<string>>(e)) {
-        handleErrorResponse(e.response?.data.message);
-      } else {
-        toast.error('Ocorreu um erro ao criar a conta, tente novamente mais tarde.');
-      }
+      handleErrorResponse(e, methods);
     }
-  });
+  };
 
   return (
     <Box className="p-8 w-[400px] absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]">
-      <form autoComplete="off" className="flex flex-col gap-4" onSubmit={onSubmit}>
-        <h1 className="text-base font-semibold text-white">Cadastre-se</h1>
-        <Field>
-          <Field.Label>Email</Field.Label>
-          <Input errorMessage={errors.email?.message} {...register('email')} />
-        </Field>
-        <Field>
-          <Field.Label>Senha</Field.Label>
-          <Input errorMessage={errors.password?.message} type="password" {...register('password')} />
-        </Field>
-        <Field>
-          <Field.Label>Confirmar senha</Field.Label>
-          <Input errorMessage={errors.rePassword?.message} type="password" {...register('rePassword')} />
-        </Field>
-        <Button>Criar conta</Button>
-        <p className="text-white">
-          Já possui uma conta?{' '}
-          <Link className="text-primary underline" href="/">
-            Entrar
-          </Link>
-        </p>
-      </form>
+      <Form title="Cadastro" schema={registerSchema} fields={fields} defaultValues={defaultValues} onSubmit={onSubmit}>
+        <div className="flex flex-col gap-2">
+          <Button>Criar conta</Button>
+          <p className="text-white">
+            Já possui uma conta?{' '}
+            <Link className="text-primary underline" href="/">
+              Entrar
+            </Link>
+          </p>
+        </div>
+      </Form>
     </Box>
   );
 }
+
+const defaultValues: DefaultValues<RegisterType> = {
+  email: '',
+  password: '',
+  rePassword: ''
+};
+
+const fields: FormField<RegisterType>[] = [
+  {
+    name: 'email',
+    label: 'Email'
+  },
+  {
+    name: 'password',
+    label: 'Senha',
+    type: 'password'
+  },
+  {
+    name: 'rePassword',
+    label: 'Confirmar senha',
+    type: 'password'
+  }
+];
