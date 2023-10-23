@@ -1,72 +1,64 @@
-import { useState } from 'react';
-import { Button } from '../Button';
-import { Plus } from '@phosphor-icons/react';
-import { Field } from '../Field';
-import { Input } from '../Input';
-import { Modal } from '../Modal';
-import { useForm } from 'react-hook-form';
-import { api } from '@/services/api';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { AddButton } from '../Button';
+import { Modal } from '../Modals/Modal';
+import { APIResponse, api } from '@/services/api';
 import { toast } from 'react-toastify';
 import { useSWRConfig } from 'swr';
 import { CreateCategory, createCategorySchema } from '@/schemas/categorySchemas';
+import { Form, FormField } from '../Form';
+import { useToggle } from '@/hooks/useToggle';
+import { ERRORS } from '@/constants/errors';
+import { DefaultValues, UseFormReturn } from 'react-hook-form';
+import { isAxiosError } from 'axios';
 
 export const AddCategoryModal = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const { open, isOpen, close } = useToggle();
   const { mutate } = useSWRConfig();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset
-  } = useForm<CreateCategory>({
-    defaultValues: {
-      color: '#FFFFFF',
-      name: ''
-    },
-    resolver: zodResolver(createCategorySchema)
-  });
-
-  const open = () => {
-    setIsOpen(true);
+  const handleAddCategoryError = (e: unknown, { setError }: UseFormReturn<CreateCategory>) => {
+    if (isAxiosError<APIResponse<string>>(e)) {
+      if (e.response?.data.message == 'Category already exists.') {
+        setError('name', { message: 'Essa categoria já existe' });
+      }
+    } else {
+      toast.error(ERRORS.FAIL);
+    }
   };
 
-  const close = () => {
-    setIsOpen(false);
-    reset();
-  };
-
-  const onSubmit = handleSubmit(async (form) => {
+  const onSubmit = async (form: CreateCategory, methods: UseFormReturn<CreateCategory>) => {
     try {
       await api.post('/categories', form);
-      toast.success('Categoria adicionada com sucesso!');
       close();
       mutate('/categories');
-    } catch (error) {
-      toast.error('Ocorreu um erro ao adicionar a categoria');
+    } catch (e) {
+      handleAddCategoryError(e, methods);
     }
-  });
+  };
 
   return (
     <>
-      <Button onClick={open} leftIcon={<Plus weight="bold" />}>
-        Nova Categoria
-      </Button>
+      <AddButton onClick={open}>Nova Categoria</AddButton>
 
       <Modal title="Nova Categoria" isOpen={isOpen} onClose={close}>
-        <form className="mt-4 flex flex-col gap-6" onSubmit={onSubmit}>
-          <Field>
-            <Field.Label>Nome</Field.Label>
-            <Input errorMessage={errors.name?.message} {...register('name')} placeholder="Ex: Alimentos" />
-          </Field>
-          <Field>
-            <Field.Label>Cor de destaque</Field.Label>
-            <Input className='w-full' type="color" errorMessage={errors.color?.message} {...register('color')} placeholder="Ex: #FFFFFF" />
-          </Field>
-          <Button leftIcon={<Plus />}>Adicionar Categoria</Button>
-        </form>
+        <Form schema={createCategorySchema} fields={categoryFields} onSubmit={onSubmit} defaultValues={defaultValues}>
+          <AddButton>Adicionar Categoria</AddButton>
+        </Form>
       </Modal>
     </>
   );
 };
+
+export const categoryFields: FormField<CreateCategory>[] = [
+  {
+    label: 'Nome',
+    name: 'name',
+    placeholder: 'Ex: Camisetas'
+  },
+  {
+    label: 'Cor de destaque',
+    name: 'color',
+    type: 'color',
+    className: 'w-full'
+  }
+];
+
+const defaultValues: DefaultValues<CreateCategory> = { color: '#FFFFFF', name: '' };
