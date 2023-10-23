@@ -35,7 +35,6 @@ export const Search: typeof Input = forwardRef((props, ref) => {
       ref={ref}
       LeftIcon={<MagnifyingGlass color="white" size={20} weight="duotone" />}
       onChange={props.onChange}
-      containerStyle="basis-[40%]"
       placeholder="Pesquisar..."
       {...props}
     />

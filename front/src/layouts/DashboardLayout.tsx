@@ -5,7 +5,7 @@ import { PrivateLayout } from './PrivateLayout';
 export default function DashboardLayout({ children }: Children) {
   return (
     <PrivateLayout>
-      <div className="grid grid-cols-[64px_calc(100%-64px)]">
+      <div className="grid h-[100vh] grid-cols-[64px_calc(100%-64px)]">
         <Sidebar />
         <div className="p-8 flex flex-1">{children}</div>
       </div>

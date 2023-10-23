@@ -34,10 +34,10 @@ export const Table = <T extends {}>({ columns, data, title, columnFilterId = 'na
   };
 
   return (
-    <Box className="p-8 m-auto">
+    <Box className="p-8 m-auto overflow-auto">
       <section className="flex flex-col gap-6 mb-6">
         <TableTitle>{title}</TableTitle>
-        <div className="flex justify-between gap-4">
+        <div className="flex justify-between gap-4 flex-wrap">
           <Search onChange={handeSearch} />
           <div>{Button}</div>
         </div>
