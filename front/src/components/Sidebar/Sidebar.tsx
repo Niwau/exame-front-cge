@@ -12,7 +12,7 @@ export const Sidebar = () => {
   }
 
   return (
-    <aside className="bg-dark-100 w-[64px] h-[100vh] flex flex-col gap-2 py-4 px-2">
+    <aside className="bg-dark-100 h-[100vh] flex flex-col gap-2 py-4 px-2">
       <SidebarButton href="/products">
         <Basket size={'90%'} color="white" />
       </SidebarButton>
