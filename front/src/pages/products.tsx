@@ -1,5 +1,5 @@
 import { Highlight } from '@/components/Highlight';
-import { Table } from '@/components/Table';
+import { Table } from '@/components/Table/Table';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { ProductInterface } from '@/types/ProductInterface';
 import { useMemo } from 'react';
@@ -7,10 +7,11 @@ import { Column } from 'react-table';
 import { AddProductModal } from '@/components/Product/AddProductModal';
 import { useProducts } from '@/services/api';
 import { EditProductModal } from '@/components/Product/EditProductModal';
+import { useErrorChecker } from '@/hooks/useErrorChecker';
 
 export default function Products() {
-
-  const { data, error } = useProducts()
+  const { data, error } = useProducts();
+  useErrorChecker(error, 'Ocorreu um erro ao buscar os produtos');
 
   const columns = useMemo<Column<ProductInterface>[]>(
     () => [
@@ -34,14 +35,15 @@ export default function Products() {
       {
         Header: 'Categoria',
         accessor: 'category',
-        Cell: (row) => row.value ? <Highlight label={row.value.name} color={row.value.color}/> : <p className='text-center'>---</p>,
+        Cell: (row) =>
+          row.value ? <Highlight label={row.value.name} color={row.value.color} /> : <p className="text-center">---</p>,
         disableSortBy: true
       },
       {
         Header: 'Editar',
         id: 'edit',
-        accessor: (product) => <EditProductModal {...product}/>,
-        disableSortBy: true,
+        accessor: (product) => <EditProductModal {...product} />,
+        disableSortBy: true
       }
     ],
     []
@@ -49,7 +51,7 @@ export default function Products() {
 
   return (
     <DashboardLayout>
-      <Table Button={<AddProductModal/>} title="Produtos" columns={columns} data={data?.data ?? []} />
+      <Table Button={<AddProductModal />} title="Produtos" columns={columns} data={data?.data ?? []} />
     </DashboardLayout>
   );
 }
